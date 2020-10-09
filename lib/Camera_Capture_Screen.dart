@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -79,30 +78,96 @@ class _Camera_Capture_ScreenState extends State<Camera_Capture_Screen> {
       color: Colors.green[600],
       textColor: Colors.white,
       onPressed: () {
-        getImageFile(ImageSource.camera);
+        showSelectImageBottomSheet(context);
       },
-      child: Text('Camera'),
+      child: Text('Take Image'),
     );
   }
 
-  getImageFile(ImageSource imageSource) async {
-    // ignore: deprecated_member_use
-    File image = await ImagePicker.pickImage(source: imageSource);
+  void showSelectImageBottomSheet(context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
+      builder: (BuildContext bc) {
+        return Container(
+          height: height * 0.1,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(20.0),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              FlatButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context, true);
+                  var image = await ImagePicker.pickImage(
+                      source: ImageSource.camera,
+                      imageQuality: 50,
+                      maxHeight: 2080,
+                      maxWidth: 2080);
 
-    File cropImage = await ImageCropper.cropImage(
-      sourcePath: image.path,
-      maxWidth: 512,
-      maxHeight: 512,
-      androidUiSettings: AndroidUiSettings(
-          statusBarColor: Colors.green[600],
-          backgroundColor: Colors.white,
-          toolbarTitle: 'Crop Image',
-          toolbarColor: Colors.green[600],
-          toolbarWidgetColor: Colors.white),
+                  File cropImage = await ImageCropper.cropImage(
+                    sourcePath: image.path,
+                    maxHeight: 2080,
+                    maxWidth: 2080,
+                    aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+                  );
+//
+
+                  setState(() {
+                    _imageFile = cropImage;
+                  });
+                },
+                icon: Icon(
+                  Icons.camera_alt,
+                ),
+                label: Text(
+                  'Camera',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              FlatButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context, true);
+                  var image = await ImagePicker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 50,
+                      maxHeight: 2080,
+                      maxWidth: 2080);
+
+                  File cropImage = await ImageCropper.cropImage(
+                    sourcePath: image.path,
+                    maxHeight: 2080,
+                    maxWidth: 2080,
+                    aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+                  );
+//
+
+                  setState(() {
+                    _imageFile = cropImage;
+                  });
+                },
+                icon: Icon(
+                  Icons.photo_library,
+                ),
+                label: Text(
+                  'Gallery',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              )
+            ],
+          ),
+        );
+      },
     );
-
-    setState(() {
-      _imageFile = cropImage;
-    });
   }
 }
